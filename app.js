@@ -119,11 +119,34 @@ function initTheme() {
 
 function applyTheme(theme) {
     localStorage.setItem('b2_german_theme', theme);
-    document.body.className = ''; 
+    
+    // Sistem teması için zel özellik
+    let effectiveTheme = theme;
+    if (theme === 'system') {
+        effectiveTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'white';
+    }
+    
+    // Sadece theme- sınıflarını temizle, zen-active gibi diğerleri kalsın
+    document.body.classList.forEach(cls => {
+        if (cls.startsWith('theme-')) document.body.classList.remove(cls);
+    });
+    
     themeBtns.forEach(btn => {
         btn.getAttribute('data-theme') === theme ? btn.classList.add('active') : btn.classList.remove('active');
     });
-    document.body.classList.add(`theme-${theme}`);
+    
+    document.body.classList.add(`theme-${effectiveTheme}`);
+    
+    // Sistem teması değişikliklerini dinle
+    if (theme === 'system') {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        mq.onchange = (e) => {
+            if (localStorage.getItem('b2_german_theme') === 'system') {
+                document.body.classList.forEach(cls => { if (cls.startsWith('theme-')) document.body.classList.remove(cls); });
+                document.body.classList.add(e.matches ? 'theme-dark' : 'theme-white');
+            }
+        };
+    }
 }
 
 function loadActiveDeck() {
@@ -187,6 +210,9 @@ function setupSidebar() {
             } else if (view === 'quiz') {
                 openQuizModal();
                 setSidebar(false);
+            } else if (view === 'zen') {
+                setSidebar(false);
+                startZenMode();
             }
         });
     });
@@ -261,6 +287,9 @@ function setupCategoryListeners() {
 }
 
 function renderCard(cardData, animationClass = '') {
+    // Önceki floating animasyonu temizle
+    const prevCard = document.getElementById('current-card');
+    if (prevCard) prevCard.style.animation = 'none';
     cardContainer.innerHTML = '';
     if (!cardData) {
         cardContainer.innerHTML = `
@@ -326,8 +355,17 @@ function renderCard(cardData, animationClass = '') {
     cardContainer.insertAdjacentHTML('beforeend', cardHTML);
     const cardEl = document.getElementById('current-card');
 
+    // Animasyon bitince floating efekti başlat (ilk render'da kart görünmeme sorunu için)
     if(animationClass) {
-        setTimeout(() => { if(cardEl) { cardEl.classList.remove(animationClass); cardEl.style.animation = 'none'; } }, 400); 
+        setTimeout(() => { 
+            if(cardEl) { 
+                cardEl.classList.remove(animationClass); 
+                cardEl.classList.add('floating');
+            } 
+        }, 420); 
+    } else {
+        // İlk yüklemede hemen floatAnim'e geçme, kısa gecikme ver
+        setTimeout(() => { if(cardEl) cardEl.classList.add('floating'); }, 100);
     }
 
     // Flip Event
