@@ -1,0 +1,39 @@
+{
+  "name": "Almanca B2 Flaş Kart",
+  "short_name": "De Flaş Kart",
+  "description": "1000 kelimelik kapasitesi ve sürükleme desteği ile interaktif B2 seviyesi Almanca kelime ezberleme uygulaması.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fdfbfb",
+  "theme_color": "#4a90e2",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "categories": ["education", "books", "reference"],
+  "shortcuts": [
+    {
+      "name": "Hızlı Quiz",
+      "short_name": "Quiz",
+      "description": "Hemen bir quiz başlat",
+      "url": "/?view=quiz",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Öğrenilenler",
+      "short_name": "Öğrenilenler",
+      "description": "Öğrendiğim kelimelere göz at",
+      "url": "/?view=learned",
+      "icons": [{ "src": "icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
