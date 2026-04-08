@@ -145,6 +145,29 @@
         </div>
     </div>
 
+    <!-- Ayarlar Modalı -->
+    <div id="settings-modal" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Ayarlar ve Veri</h2>
+                <button id="close-modal-btn" class="icon-btn bouncy-btn">&times;</button>
+            </div>
+            <div class="modal-body" style="text-align: center;">
+                <p>Kendi kelimelerinizi içeren JSON dosyasını yükleyin veya destenizi yedekleyin.</p>
+                <div class="action-buttons">
+                    <button id="export-btn" class="action-btn secondary bouncy-btn"><i class="fas fa-download"></i> Desteyi Dışa Aktar</button>
+                    <label class="action-btn primary bouncy-btn" style="cursor:pointer; position:relative; overflow:hidden;">
+                        <i class="fas fa-upload"></i> Kendi Kelimelerini Yükle
+                        <input type="file" id="import-file" accept=".json" style="opacity:0; position:absolute; top:0; left:0; width:100%; height:100%; cursor:pointer;">
+                    </label>
+                </div>
+                <div class="danger-zone">
+                    <button id="reset-btn" class="action-btn danger bouncy-btn"><i class="fas fa-trash-alt"></i> Varsayılan Kelimelere Dön</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Nasıl Kullanılır Modalı -->
     <div id="guide-modal" class="modal-overlay">
         <div class="modal-content">

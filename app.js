@@ -413,13 +413,13 @@ function setupSwipe() {
 
 // ----- MODALS -----
 function setupModalListeners() {
-    if(settingsBtn) {
+    if(settingsBtn && settingsModal && closeModalBtn) {
         settingsBtn.addEventListener('click', () => settingsModal.classList.add('active'));
         closeModalBtn.addEventListener('click', () => settingsModal.classList.remove('active'));
         settingsModal.addEventListener('click', (e) => { if(e.target === settingsModal) settingsModal.classList.remove('active'); });
     }
 
-    if(guideBtn) {
+    if(guideBtn && guideModal && closeGuideBtn && guideOkBtn) {
         guideBtn.addEventListener('click', () => guideModal.classList.add('active'));
         closeGuideBtn.addEventListener('click', () => guideModal.classList.remove('active'));
         guideOkBtn.addEventListener('click', () => guideModal.classList.remove('active'));
