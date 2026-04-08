@@ -766,24 +766,32 @@ body.theme-dark .action-btn.danger:hover {
 }
 .status-btn {
     border: none;
-    width: 45px; height: 45px;
+    width: 50px; height: 50px;
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     cursor: pointer;
-    transition: all 0.2s;
-    background: #edf2f7;
-    color: #a0aec0;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.08);
 }
 body.theme-dark .status-btn, body.theme-navy .status-btn {
     background: rgba(255,255,255,0.1);
 }
-.status-btn:hover { transform: scale(1.1); }
-.learned-btn.active { background: #c6f6d5 !important; color: #38a169 !important; box-shadow: 0 0 10px #c6f6d5; }
-.review-btn.active { background: #fed7d7 !important; color: #e53e3e !important; box-shadow: 0 0 10px #fed7d7; }
+.status-btn:hover { transform: scale(1.15); }
+
+.learned-btn { color: #10b981; border: 2px solid rgba(16, 185, 129, 0.3); }
+.learned-btn.active { background: #10b981 !important; color: white !important; border-color: #10b981; box-shadow: 0 0 15px rgba(16, 185, 129, 0.6); }
+
+.review-btn { color: #ef4444; border: 2px solid rgba(239, 68, 68, 0.3); }
+.review-btn.active { background: #ef4444 !important; color: white !important; border-color: #ef4444; box-shadow: 0 0 15px rgba(239, 68, 68, 0.6); }
+
+/* Der/Die/Das Color Coding */
+.word-main.article-der { color: #2563eb; text-shadow: 0 2px 10px rgba(37, 99, 235, 0.3); }
+.word-main.article-die { color: #e11d48; text-shadow: 0 2px 10px rgba(225, 29, 72, 0.3); }
+.word-main.article-das { color: #059669; text-shadow: 0 2px 10px rgba(5, 150, 105, 0.3); }
 
 /* Quiz Specific */
 .quiz-content { width: 95%; max-width: 500px; min-height: 400px; }
@@ -802,4 +810,81 @@ body.theme-dark .status-btn, body.theme-navy .status-btn {
     transition: all 0.3s;
 }
 #quiz-answer-input:focus { box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3); }
+
+/* Heatmap Grid */
+.heatmap-day {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    background: #e2e8f0;
+    transition: all 0.2s;
+}
+.heatmap-day[data-level="1"] { background: #9be9a8; }
+.heatmap-day[data-level="2"] { background: #40c463; }
+.heatmap-day[data-level="3"] { background: #30a14e; }
+.heatmap-day[data-level="4"] { background: #216e39; }
+
+/* Zen Mode */
+body.zen-active header,
+body.zen-active .controls,
+body.zen-active .swipe-hint,
+body.zen-active .sidebar-overlay,
+body.zen-active .sidebar {
+    display: none !important;
+}
+
+body.zen-active {
+    background: #0f172a !important;
+    color: white;
+}
+
+body.zen-active .app-container {
+    justify-content: center;
+    padding-top: 150px;
+}
+
+body.zen-active .flashcard {
+    box-shadow: 0 0 40px rgba(255,255,255,0.1);
+}
+
+#zen-timer-display {
+    display: none;
+}
+
+body.zen-active #zen-timer-display {
+    display: block;
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: white;
+    font-size: 3rem;
+    font-weight: 800;
+    z-index: 1000;
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+}
+
+#exit-zen-btn {
+    display: none;
+}
+
+body.zen-active #exit-zen-btn {
+    display: block;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    color: white;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    z-index: 1000;
+    font-family: inherit;
+    transition: all 0.2s;
+}
+body.zen-active #exit-zen-btn:hover {
+    background: rgba(255,255,255,0.2);
+}
 

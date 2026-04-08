@@ -53,10 +53,16 @@
             </div>
         </div>
 
+        <div class="heatmap-container" style="margin: 0 15px 15px 15px; padding: 15px; background: rgba(0,0,0,0.03); border-radius: 12px;">
+            <h3 style="font-size: 0.9rem; margin-bottom: 10px; color: #4a5568;"><i class="fas fa-fire" style="color:#ed8936;"></i> Çalışma Haritası</h3>
+            <div id="heatmap-grid" style="display: flex; gap: 3px; flex-wrap: wrap; height: 60px; align-content: flex-start;"></div>
+        </div>
+
         <nav class="sidebar-nav">
             <button class="menu-btn" data-view="learned"><i class="fas fa-check-double"></i> Öğrendiğim Kelimeler</button>
             <button class="menu-btn" data-view="review"><i class="fas fa-list-ul"></i> Tekrar Edilecekler</button>
             <button class="menu-btn" data-view="quiz"><i class="fas fa-gamepad"></i> Quiz Modu</button>
+            <button class="menu-btn" data-view="zen" style="color: #805ad5;"><i class="fas fa-brain"></i> 15 Dk Derin Odak (Zen)</button>
         </nav>
     </div>
 
@@ -102,6 +108,10 @@
         </div>
     </div>
 
+    <!-- Zen Mode Overlays -->
+    <div id="zen-timer-display">15:00</div>
+    <button id="exit-zen-btn"><i class="fas fa-times"></i> Zen Modundan Çık</button>
+
     <div class="app-container">
         <header>
             <div class="header-top">
@@ -120,13 +130,14 @@
                     <button id="settings-btn" class="icon-btn bouncy-btn" title="Ayarlar ve Veri Yönetimi"><i class="fas fa-cog"></i></button>
                 </div>
             </div>
-            <nav class="categories">
+            <nav class="categories" id="categories-nav">
                 <button class="category-btn active" data-category="tümü">Tümü</button>
                 <button class="category-btn" data-category="isimler">İsimler</button>
                 <button class="category-btn" data-category="fiiller">Fiiller</button>
                 <button class="category-btn" data-category="sıfatlar">Sıfatlar</button>
                 <button class="category-btn" data-category="bağlaçlar">Bağlaçlar</button>
                 <button class="category-btn" data-category="favoriler"><i class="fas fa-heart"></i> Favoriler</button>
+                <button class="category-btn" id="add-folder-btn" title="Yeni Özel Klasör Ekle" style="background:var(--primary-color);color:white;"><i class="fas fa-plus"></i></button>
             </nav>
         </header>
 

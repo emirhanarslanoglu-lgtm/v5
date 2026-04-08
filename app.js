@@ -9,6 +9,7 @@ let currentIndex = 0;
 let favorites = JSON.parse(localStorage.getItem('b2_german_favorites')) || [];
 let learned = JSON.parse(localStorage.getItem('b2_german_learned')) || [];
 let review = JSON.parse(localStorage.getItem('b2_german_review')) || [];
+let customFolders = JSON.parse(localStorage.getItem('b2_german_folders')) || {};
 let stats = JSON.parse(localStorage.getItem('b2_german_stats')) || { flipped: 0, timeSpentSec: 0 };
 
 // DOM Elements
@@ -88,6 +89,22 @@ function init() {
         if (stats.timeSpentSec % 5 === 0) saveStats(); // Her 5 sn de bir kaydet
         updateTimeUI();
     }, 1000);
+    renderHeatmap();
+    loadFolders();
+    
+    const addFolderBtn = document.getElementById('add-folder-btn');
+    if(addFolderBtn) {
+        addFolderBtn.addEventListener('click', () => {
+            const fName = prompt("Yeni klasörünüzün adını girin:");
+            if(fName && fName.trim().length > 0) {
+                if(!customFolders[fName]) {
+                    customFolders[fName] = [];
+                    localStorage.setItem('b2_german_folders', JSON.stringify(customFolders));
+                    loadFolders();
+                } else alert("Bu klasör zaten var.");
+            }
+        });
+    }
 }
 
 function initTheme() {
@@ -198,12 +215,38 @@ function filterCards(category) {
         filteredCards = activeDeck.filter(card => learned.includes(card.id));
     } else if (category === 'review') {
         filteredCards = activeDeck.filter(card => review.includes(card.id));
+    } else if (category.startsWith('folder:')) {
+        const folderName = category.split(':')[1];
+        filteredCards = activeDeck.filter(card => customFolders[folderName] && customFolders[folderName].includes(card.id));
     } else {
         filteredCards = activeDeck.filter(card => card.category === category);
     }
     
     currentIndex = 0;
     filteredCards.length > 0 ? renderCard(filteredCards[currentIndex]) : renderCard(null);
+}
+
+function loadFolders() {
+    const nav = document.getElementById('categories-nav');
+    const addBtn = document.getElementById('add-folder-btn');
+    if(!nav || !addBtn) return;
+    
+    document.querySelectorAll('.custom-folder-btn').forEach(el => el.remove());
+    
+    Object.keys(customFolders).forEach(folderName => {
+        const btn = document.createElement('button');
+        btn.className = 'category-btn custom-folder-btn';
+        btn.setAttribute('data-category', `folder:${folderName}`);
+        btn.innerHTML = `<i class="fas fa-folder"></i> ${folderName}`;
+        nav.insertBefore(btn, addBtn);
+        
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+            if(document.querySelectorAll('.sidebar-nav .menu-btn')) document.querySelectorAll('.sidebar-nav .menu-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterCards(`folder:${folderName}`);
+        });
+    });
 }
 
 function setupCategoryListeners() {
@@ -235,11 +278,21 @@ function renderCard(cardData, animationClass = '') {
     const isLearned = learned.includes(cardData.id);
     const isReview = review.includes(cardData.id);
 
+    // Der/Die/Das Color Engine
+    let articleClass = '';
+    if(cardData.germanWord) {
+        const wordLower = cardData.germanWord.toLowerCase();
+        if (wordLower.startsWith('der ')) articleClass = 'article-der';
+        else if (wordLower.startsWith('die ')) articleClass = 'article-die';
+        else if (wordLower.startsWith('das ')) articleClass = 'article-das';
+    }
+
     // Learning Status Buttons HTML
     const learningControlsHTML = `
         <div class="learning-status-controls">
-            <button class="status-btn learned-btn ${isLearned ? 'active' : ''}" data-id="${cardData.id}" title="Öğrendim"><i class="fas fa-check"></i></button>
-            <button class="status-btn review-btn ${isReview ? 'active' : ''}" data-id="${cardData.id}" title="Tekrar Edilecek"><i class="fas fa-times"></i></button>
+            <button class="status-btn add-folder-card-btn bouncy-btn" data-id="${cardData.id}" title="Klasöre Ekle"><i class="fas fa-folder-plus"></i></button>
+            <button class="status-btn learned-btn bouncy-btn ${isLearned ? 'active' : ''}" data-id="${cardData.id}" title="Öğrendim"><i class="fas fa-check"></i></button>
+            <button class="status-btn review-btn bouncy-btn ${isReview ? 'active' : ''}" data-id="${cardData.id}" title="Tekrar Edilecek"><i class="fas fa-times"></i></button>
         </div>
     `;
 
@@ -252,7 +305,7 @@ function renderCard(cardData, animationClass = '') {
                     <i class="fas fa-heart"></i>
                 </button>
                 <div class="pronunciation">${cardData.pronunciation || ''}</div>
-                <div class="word">${cardData.germanWord}</div>
+                <div class="word word-main ${articleClass}">${cardData.germanWord}</div>
                 <div class="sentence">${cardData.germanSentence || ''}</div>
                 ${learningControlsHTML}
             </div>
@@ -303,6 +356,30 @@ function renderCard(cardData, animationClass = '') {
         btn.addEventListener('click', (e) => { e.stopPropagation(); toggleStatus(cardData.id, 'review'); });
     });
 
+    // Folder Add Event
+    cardEl.querySelectorAll('.add-folder-card-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            const keys = Object.keys(customFolders);
+            if(keys.length === 0) return alert("Hata: Önce üst menüdeki (+) klasör butonuna basarak bir klasör oluşturun!");
+            
+            let msg = "Bu kelimeyi hangi klasöre eklemek istiyorsunuz?\n(Lütfen klasör numarasını girin)\n\n" + keys.map((k, i) => `${i+1}. ${k}`).join('\n');
+            let num = prompt(msg);
+            if(!num || isNaN(num)) return;
+            
+            let target = keys[parseInt(num)-1];
+            if(target) {
+                if(!customFolders[target].includes(cardData.id)) {
+                    customFolders[target].push(cardData.id);
+                    localStorage.setItem('b2_german_folders', JSON.stringify(customFolders));
+                    alert(`✅ Kelime '${target}' klasörüne eklendi!`);
+                } else {
+                    alert(`❌ Kelime zaten '${target}' klasöründe mevcut.`);
+                }
+            }
+        });
+    });
+
     updateProgress();
     updateControls();
 }
@@ -326,6 +403,8 @@ function toggleStatus(id, type) {
     
     localStorage.setItem('b2_german_learned', JSON.stringify(learned));
     localStorage.setItem('b2_german_review', JSON.stringify(review));
+    
+    logActivity(); // HEATMAP UPDATE
     
     // UI Güncelleme (Geçerli Kart İçin)
     const cardEl = document.getElementById('current-card');
@@ -363,11 +442,13 @@ function navigate(direction) {
     
     if (direction === 1 && currentIndex < filteredCards.length - 1) {
         if (currentCard) {
+            currentCard.style.transform = '';
             currentCard.classList.add('slide-out-left');
             setTimeout(() => { currentIndex++; renderCard(filteredCards[currentIndex], 'slide-in-right'); }, 300);
         }
     } else if (direction === -1 && currentIndex > 0) {
         if (currentCard) {
+            currentCard.style.transform = '';
             currentCard.classList.add('slide-out-right');
             setTimeout(() => { currentIndex--; renderCard(filteredCards[currentIndex], 'slide-in-left'); }, 300);
         }
@@ -385,30 +466,63 @@ function updateControls() {
 }
 
 function setupSwipe() {
-    let touchstartX = 0; let touchendX = 0;
-    let isMouseDown = false; let mouseStartX = 0;
+    let isDragging = false;
+    let startX = 0;
+    let currentX = 0;
 
-    cardContainer.addEventListener('touchstart', e => { touchstartX = e.changedTouches[0].screenX; }, {passive: true});
-    cardContainer.addEventListener('touchend', e => { touchendX = e.changedTouches[0].screenX; handleGesture(); });
-    
-    cardContainer.addEventListener('mousedown', e => { isMouseDown = true; mouseStartX = e.screenX; });
-    cardContainer.addEventListener('mousemove', e => { if (isMouseDown) e.preventDefault(); });
-    cardContainer.addEventListener('mouseup', e => {
-        if (!isMouseDown) return;
-        isMouseDown = false;
-        let mouseEndX = e.screenX;
-        if (Math.abs(mouseEndX - mouseStartX) < 20) return;
-        touchstartX = mouseStartX; touchendX = mouseEndX;
-        handleGesture();
-    });
-    
-    cardContainer.addEventListener('mouseleave', () => { isMouseDown = false; });
-
-    function handleGesture() {
+    const dragStart = (e) => {
         if (filteredCards.length <= 1) return;
-        if (touchstartX - touchendX > 50) navigate(1); 
-        if (touchendX - touchstartX > 50) navigate(-1); 
-    }
+        const currentCard = document.getElementById('current-card');
+        if (!currentCard) return;
+        if (e.target.closest('.status-btn') || e.target.closest('.favorite-btn')) return; // Ignore buttons
+        
+        isDragging = true;
+        startX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+        currentCard.style.transition = 'none';
+        currentCard.style.cursor = 'grabbing';
+    };
+
+    const dragMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault();
+        currentX = e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+        const diff = currentX - startX;
+        const currentCard = document.getElementById('current-card');
+        if (currentCard) {
+            const rotateFactor = diff * 0.05;
+            currentCard.style.transform = `translateX(${diff}px) rotate(${rotateFactor}deg)`;
+        }
+    };
+
+    const dragEnd = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        const diff = currentX - startX;
+        const currentCard = document.getElementById('current-card');
+        
+        if (currentCard) {
+            currentCard.style.cursor = 'pointer';
+            currentCard.style.transition = 'transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+            if (diff > 100) {
+                navigate(-1);
+            } else if (diff < -100) {
+                navigate(1);
+            } else {
+                currentCard.style.transform = 'translateX(0px) rotate(0deg)';
+                setTimeout(() => { if(currentCard) currentCard.style.transform = ''; }, 300);
+            }
+        }
+        startX = 0; currentX = 0;
+    };
+
+    cardContainer.addEventListener('mousedown', dragStart);
+    cardContainer.addEventListener('mousemove', dragMove);
+    cardContainer.addEventListener('mouseup', dragEnd);
+    cardContainer.addEventListener('mouseleave', dragEnd);
+
+    cardContainer.addEventListener('touchstart', dragStart, {passive: true});
+    cardContainer.addEventListener('touchmove', dragMove, {passive: false});
+    cardContainer.addEventListener('touchend', dragEnd);
 }
 
 // ----- MODALS -----
@@ -685,5 +799,81 @@ function finishQuiz() {
     document.getElementById('quiz-res-correct').textContent = correctCount;
     document.getElementById('quiz-res-wrong').textContent = wrongCount;
 }
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+}
+
+// ----- HEATMAP & ZEN MODE -----
+function logActivity() {
+    const today = new Date().toISOString().split('T')[0];
+    let activityLog = JSON.parse(localStorage.getItem('b2_activity_log')) || {};
+    activityLog[today] = (activityLog[today] || 0) + 1;
+    localStorage.setItem('b2_activity_log', JSON.stringify(activityLog));
+    renderHeatmap();
+}
+
+function renderHeatmap() {
+    const grid = document.getElementById('heatmap-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const activityLog = JSON.parse(localStorage.getItem('b2_activity_log')) || {};
+    
+    const today = new Date();
+    for (let i = 29; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const count = activityLog[dateStr] || 0;
+        
+        let level = 0;
+        if(count > 0) level = 1;
+        if(count > 5) level = 2;
+        if(count > 20) level = 3;
+        if(count > 50) level = 4;
+        
+        const square = document.createElement('div');
+        square.className = 'heatmap-day';
+        square.setAttribute('data-level', level);
+        square.title = `${dateStr}: ${count} kelime`;
+        grid.appendChild(square);
+    }
+}
+
+let zenInterval = null;
+let zenTimeLeft = 900; 
+
+function startZenMode() {
+    document.body.classList.add('zen-active');
+    zenTimeLeft = 900;
+    updateZenTimerDisplay();
+    clearInterval(zenInterval);
+    zenInterval = setInterval(() => {
+        zenTimeLeft--;
+        updateZenTimerDisplay();
+        if(zenTimeLeft <= 0) {
+            stopZenMode();
+            alert("Tebrikler! 15 Dakikalık Derin Odak Seansını Başarıyla Tamamladınız! 🧠✨");
+        }
+    }, 1000);
+}
+
+function stopZenMode() {
+    document.body.classList.remove('zen-active');
+    clearInterval(zenInterval);
+}
+
+function updateZenTimerDisplay() {
+    const min = Math.floor(zenTimeLeft / 60);
+    const sec = zenTimeLeft % 60;
+    const display = document.getElementById('zen-timer-display');
+    if(display) display.textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+}
+
+const exitZenBtn = document.getElementById('exit-zen-btn');
+if(exitZenBtn) exitZenBtn.addEventListener('click', stopZenMode);
 
 document.addEventListener('DOMContentLoaded', init);
